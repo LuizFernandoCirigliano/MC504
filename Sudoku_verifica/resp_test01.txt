@@ -1,0 +1,3 @@
+A linha 3 possui 2 ocorrências do número 9.
+O bloco 1 possui 2 ocorrências do número 9.
+A coluna 3 possui 2 ocorrências do número 9.
