@@ -3,7 +3,7 @@
 *	Grupo:
 *		Ulisses Malta Santos					140958
 *		Luiz Fernando Cirigliano Villela		136734
-*		José Ernesto Stelzer Monar 				139553
+*		José Ernesto Stelzer Monar				139553
 *
 **********************************************************************/
 
