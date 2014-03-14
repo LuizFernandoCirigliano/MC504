@@ -59,12 +59,14 @@ void * sudoku(void *mat){
     pthread_t thr[NUMERO_THREADS];
     
 	matriz = (short **) mat;
-    
+    //testa se tabuleiro esta completo
 	if(completo(matriz)) {
 		imprime(matriz);
 		*retorno = 1;
 		return (void *)retorno;
 	}
+
+	//acha primeira posicao vazia no tabuleiro
 	for(i=0;i<9 && !stop;i++) {
 		for(j=0;j<9 && !stop;j++) {
 			if(matriz[i][j] == 0)
@@ -76,20 +78,29 @@ void * sudoku(void *mat){
     
 	for(k=1;k<10;k++) {
 		matCopy[k-1] = NULL;
+		//testa se o numero pode ser colocado no quadrado
 		if(possivel[k]) {
+			//aloca matriz auxiliar para copiar valores para proxima decisao
             matCopy[k-1] = (short **)malloc(sizeof(short *) * 9);
 			for (x = 0; x < 9; x++) {
 				matCopy[k-1][x] = (short *)malloc(sizeof(short)* 9);
 			}
 			
+			//copia valores (tentar trocar por memcpy dps)
 			for (x = 0; x < 9 ; x++)
 				for (y = 0 ; y < 9 ; y ++)
 					matCopy[k-1][x][y] = matriz[x][y];
             
+			//insere tentativa de valor
 			matCopy[k-1][i][j] = k;
+
+			//desce um nivel na recursao
 			resultado = (int *) sudoku(matCopy[k - 1]);
+
+			//se resultado == 1, o sudoku foi completado, desfaz recursao
 			if(*resultado) {
 				*retorno = 1;
+
 				//libera matrizes auxiliares
 				for (x = 0; x < k  ; x++) {
 						if (matCopy[x]) {
@@ -101,6 +112,7 @@ void * sudoku(void *mat){
 						}
 				}
 				free (resultado);
+		
 				return (void *)retorno;
 			} else {
 				if (resultado)
@@ -116,7 +128,6 @@ void * sudoku(void *mat){
 	//libera matrizes auxiliares
 	for (i = 0; i < 9 ; i++) {
 		if (matCopy[i]) {
-//			pthread_join (thr[i], (void *)resultado);
 			for ( x= 0; x < 9; x++) {
 				free(matCopy[i][x]);
 			}
@@ -135,29 +146,34 @@ int main(){
 	scanf("%d",  &n);
     
 	pthread_t thr[NUMERO_THREADS];
-    
+	
+	//aloca matriz    
 	mat = (short **)malloc(sizeof(short *) * 9);
 	for (i = 0; i < 9; i++) {
 		mat[i] = (short *)malloc(sizeof(short)* 9);
 	}
+	//zera matriz
 	for (X = 0; X < 9; X++) 
 		for (Y = 0; Y < 9 ; Y++)
 			mat[X][Y] = 0;
+	//le entradas
 	while(n--) {
 		scanf("%d %d %d",&X,&Y,&V);
 		mat[X-1][Y-1] = V;
 	}
+	//chama thread
 	pthread_create(&thr[0], NULL, sudoku, (void *)mat);
 	pthread_join (thr[0], (void *)&resultado);
 	
 	if(!resultado){
 		printf("Sem solucao\n");
 	}
-	
+
+	//libera matriz
 	for (i = 0; i < 9; i++) {
 		free (mat[i]);
 	}
 	free (mat);
-//		free (resultado);
+
 	return 0;
 }
