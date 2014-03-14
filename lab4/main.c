@@ -52,7 +52,7 @@ int completo (short **mat){
 void * sudoku(void *mat){
 	int i,j = 0,k,x,y,stop = 0;
 	int *retorno = (int *) malloc (sizeof (int));
-    int *resultado = (int *) malloc (sizeof(int));
+    int *resultado;
 	short **matCopy[9], **matriz;
 	int possivel[10];
     
@@ -87,23 +87,43 @@ void * sudoku(void *mat){
 					matCopy[k-1][x][y] = matriz[x][y];
             
 			matCopy[k-1][i][j] = k;
-//            pthread_create(&thr[k-1], NULL, sudoku, (void *)matCopy[k-1]);
-            
-            
-			if(* (int *) sudoku(matCopy[k - 1])) {
+			resultado = (int *) sudoku(matCopy[k - 1]);
+			if(*resultado) {
 				*retorno = 1;
+				//libera matrizes auxiliares
+				for (x = 0; x < k  ; x++) {
+						if (matCopy[x]) {
+							for (y= 0; y < 9; y++) {
+								free(matCopy[x][y]);
+							}
+
+							free (matCopy[x]);
+						}
+				}
+				free (resultado);
 				return (void *)retorno;
+			} else {
+				if (resultado)
+					free (resultado);
 			}
 			matCopy[k-1][i][j] = 0;
 		}
 	}
     
-//	for (i = 0; i < 9 ; i++)
-//		if (matCopy[i-1]) {
-//			pthread_join (thr[i], (void *)resultado);
-//		}
 	
 	*retorno = 0;
+	
+	//libera matrizes auxiliares
+	for (i = 0; i < 9 ; i++) {
+		if (matCopy[i]) {
+//			pthread_join (thr[i], (void *)resultado);
+			for ( x= 0; x < 9; x++) {
+				free(matCopy[i][x]);
+			}
+			free (matCopy[i]);
+		}
+	}
+	
 	return (void *)retorno;
 }
 
@@ -111,7 +131,7 @@ int main(){
 	short **mat;
 	int n,X,Y,V;
 	int i;
-	int *resultado = (int *) malloc (sizeof(int));
+	int resultado;
 	scanf("%d",  &n);
     
 	pthread_t thr[NUMERO_THREADS];
@@ -120,14 +140,24 @@ int main(){
 	for (i = 0; i < 9; i++) {
 		mat[i] = (short *)malloc(sizeof(short)* 9);
 	}
+	for (X = 0; X < 9; X++) 
+		for (Y = 0; Y < 9 ; Y++)
+			mat[X][Y] = 0;
 	while(n--) {
 		scanf("%d %d %d",&X,&Y,&V);
 		mat[X-1][Y-1] = V;
 	}
 	pthread_create(&thr[0], NULL, sudoku, (void *)mat);
-	pthread_join (thr[0], (void *)resultado);
-	if(!*(int *)resultado){
+	pthread_join (thr[0], (void *)&resultado);
+	
+	if(!resultado){
 		printf("Sem solucao\n");
 	}
+	
+	for (i = 0; i < 9; i++) {
+		free (mat[i]);
+	}
+	free (mat);
+//		free (resultado);
 	return 0;
 }
