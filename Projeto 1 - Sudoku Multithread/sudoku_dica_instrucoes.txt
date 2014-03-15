@@ -1,6 +1,6 @@
 O módulo sudoku_dica.c recebe como entrada do programa uma
 matriz 9x9 não resolvida de sudoku, isto é, recebe uma matriz
-contendo números de 1 a 9 e posições vazias devem ser preenchidas
+contendo números de 1 a 9 e posições vazias que devem ser preenchidas
 com um X. Essa matriz de entrada tem o seguinte formato:
 
 X 6 1 X X X X 9 X
