@@ -2,8 +2,10 @@
 #include<stdlib.h>
 #include<pthread.h>
 #include<string.h>
-#define NUMERO_THREADS 9
-/*Funcao que imprime a matriz 9x9 que armazena o jogo de Sudoku (opcionalmente a matriz pode ser global e nao passada por parametro)*/
+#define NUMERO_THREADS 4
+
+int GlobalThreadCount = 0, resultFound = 0;
+/*Funcao que imprime a matriz 9x9 que armazena o jogo de Sudoku*/
 void imprime(short **mat){
 	int i, j;
 	for(i=0; i<9; i++){
@@ -50,18 +52,26 @@ int completo (short **mat){
 
 
 void * sudoku(void *mat){
-	int i,j = 0,k,x,y,stop = 0;
+	int i,j = 0,k,x,y,stop = 0, threadCount = 0;
 	int *retorno = (int *) malloc (sizeof (int));
-    int *resultado;
+    int resultado;
 	short **matCopy[9], **matriz;
 	int possivel[10];
     
-    pthread_t thr[NUMERO_THREADS];
+    pthread_t thr[9] = {0};
     
+    if (resultFound) {
+    	*retorno = 0;
+    	return (void *) retorno;
+    }
 	matriz = (short **) mat;
     //testa se tabuleiro esta completo
 	if(completo(matriz)) {
+		resultFound = 1;
 		imprime(matriz);
+
+		exit(0);
+
 		*retorno = 1;
 		return (void *)retorno;
 	}
@@ -90,40 +100,53 @@ void * sudoku(void *mat){
 			for (x = 0; x < 9 ; x++)
 				for (y = 0 ; y < 9 ; y ++)
 					matCopy[k-1][x][y] = matriz[x][y];
-            
+            //memcpy (matCopy[k-1], matriz, sizeof(short)*81);
 			//insere tentativa de valor
 			matCopy[k-1][i][j] = k;
 
 			//desce um nivel na recursao
-			resultado = (int *) sudoku(matCopy[k - 1]);
+			if (GlobalThreadCount >= NUMERO_THREADS) {
+				resultado = *((int *) sudoku(matCopy[k - 1]));
+				//se resultado == 1, o sudoku foi completado, desfaz recursao
+				//matCopy[k-1][i][j] = 0;
 
-			//se resultado == 1, o sudoku foi completado, desfaz recursao
-			if(*resultado) {
-				*retorno = 1;
+				if(resultado) {
+					*retorno = 1;
 
-				//libera matrizes auxiliares
-				for (x = 0; x < k  ; x++) {
-						if (matCopy[x]) {
-							for (y= 0; y < 9; y++) {
-								free(matCopy[x][y]);
+					//libera matrizes auxiliares
+					for (x = 0; x < k  ; x++) {
+							if (matCopy[x]) {
+								for (y= 0; y < 9; y++) {
+									free(matCopy[x][y]);
+								}
+
+								free (matCopy[x]);
 							}
-
-							free (matCopy[x]);
-						}
+					}
+					
+			
+					return (void *)retorno;
 				}
-				free (resultado);
-		
-				return (void *)retorno;
-			} else {
-				if (resultado)
-					free (resultado);
 			}
-			matCopy[k-1][i][j] = 0;
+			else {
+				//imprime(matCopy[k - 1]);
+				GlobalThreadCount++;
+				pthread_create(&thr[threadCount++], NULL, sudoku, (void *)matCopy[k-1]);
+				//printf("nova thread \n");
+			}
 		}
 	}
-    
-	
 	*retorno = 0;
+
+	for (i = 0; i < threadCount; i++) {
+		if (thr[i]) {
+			pthread_join(thr[i], (void *) &resultado);
+			GlobalThreadCount--;
+			if (resultado == 1)
+				*retorno = 1;
+		}
+	}
+	
 	
 	//libera matrizes auxiliares
 	for (i = 0; i < 9 ; i++) {
@@ -145,7 +168,7 @@ int main(){
 	int resultado;
 	scanf("%d",  &n);
     
-	pthread_t thr[NUMERO_THREADS];
+	pthread_t thr;
 	
 	//aloca matriz    
 	mat = (short **)malloc(sizeof(short *) * 9);
@@ -162,18 +185,11 @@ int main(){
 		mat[X-1][Y-1] = V;
 	}
 	//chama thread
-	pthread_create(&thr[0], NULL, sudoku, (void *)mat);
-	pthread_join (thr[0], (void *)&resultado);
+	pthread_create(&thr, NULL, sudoku, (void *)mat);
+	 pthread_join (thr, (void *)&resultado);
 	
-	if(!resultado){
-		printf("Sem solucao\n");
-	}
-
-	//libera matriz
-	for (i = 0; i < 9; i++) {
-		free (mat[i]);
-	}
-	free (mat);
-
+	
+	printf("Sem solucao\n");
+	
 	return 0;
 }
