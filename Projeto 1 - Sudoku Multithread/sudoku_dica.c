@@ -1,11 +1,11 @@
-/**********************************************************************
+/**********************************************************
 *
 *	Grupo:
-*		Ulisses Malta Santos						140958
+*		Ulisses Malta Santos							140958
 *		Luiz Fernando Cirigliano Villela			136734
 *		José Ernesto Stelzer Monar					139553
 *
-**********************************************************************/
+**********************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +41,7 @@ TipoDadoFinal** dadosFinais;
 int main() {
 	char entrada;
 	int i, j, k, entradaInteira;
+
 	/* Alocação das estruturas de controle. */	
 	tabuleiroEntrada = (int**)malloc(sizeof(int*)*DIMENSAO_TABULEIRO);
 	dadosFinais = (TipoDadoFinal**)malloc(sizeof(TipoDadoFinal*)*DIMENSAO_TABULEIRO);

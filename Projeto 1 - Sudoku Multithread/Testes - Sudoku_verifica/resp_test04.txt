@@ -1,0 +1,15 @@
+A linha 1 possui 2 ocorrências do número 3.
+A linha 1 possui 3 ocorrências do número 9.
+A coluna 2 possui 2 ocorrências do número 1.
+O bloco 2 possui 2 ocorrências do número 3.
+O bloco 3 possui 3 ocorrências do número 9.
+O bloco 4 possui 2 ocorrências do número 1.
+A coluna 5 possui 2 ocorrências do número 3.
+A linha 6 possui 2 ocorrências do número 1.
+A linha 7 possui 2 ocorrências do número 2.
+A linha 8 possui 2 ocorrências do número 2.
+A coluna 9 possui 2 ocorrências do número 2.
+A coluna 9 possui 2 ocorrências do número 9.
+O bloco 9 possui 4 ocorrências do número 2.
+A linha 9 possui 2 ocorrências do número 2.
+A coluna 8 possui 3 ocorrências do número 2.

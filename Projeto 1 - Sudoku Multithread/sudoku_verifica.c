@@ -1,11 +1,11 @@
-/**********************************************************************
+/**********************************************************
 *
 *	Grupo:
-*		Ulisses Malta Santos						140958
+*		Ulisses Malta Santos							140958
 *		Luiz Fernando Cirigliano Villela			136734
 *		José Ernesto Stelzer Monar					139553
 *
-**********************************************************************/
+**********************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,7 +79,9 @@ void* verificaBloco(void* bloco) {
 }
 
 int main() {
-	int i, j, *thread_id;	
+	int i, j;
+
+	int thread_id[NUMERO_THREADS];
 	pthread_t thr[NUMERO_THREADS];
 	
 	for(i = 0; i < 9; i++) {
@@ -90,11 +92,10 @@ int main() {
 	
 	/* Cada thread verifica uma linha, uma coluna e um quadrante da matriz de sudoku. */
 	for(i = 0; i < NUMERO_THREADS; i++) {
-		thread_id = (int*)malloc(sizeof(int));
-		*thread_id = i;		
-	    pthread_create(&thr[i], NULL, verificaLinha, (void*) thread_id);
-	    pthread_create(&thr[i], NULL, verificaColuna, (void*) thread_id);
-	    pthread_create(&thr[i], NULL, verificaBloco, (void*) thread_id);
+		thread_id[i] = i;	
+		pthread_create(&thr[i], NULL, verificaLinha, (void*) &thread_id[i]);
+		pthread_create(&thr[i], NULL, verificaColuna, (void*) &thread_id[i]);
+	  	pthread_create(&thr[i], NULL, verificaBloco, (void*) &thread_id[i]);
 	}
 	
 	/* Aguarda a execução das threads para que  o programa continue. */
