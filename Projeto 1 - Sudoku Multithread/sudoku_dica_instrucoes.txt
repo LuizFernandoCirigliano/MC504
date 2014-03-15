@@ -13,6 +13,10 @@ X X X 4 X 1 X X 9
 X 8 X 7 3 X X 4 2
 X 9 X X X X 3 1 X
 
+A matriz de entrada deve ser uma matriz válida de sudoku, sem repetições
+de elementos em suas linhas, colunas ou quadrantes 3x3, exceto por posições
+vazias é claro.
+
 Uma vez recebida a matriz o programa analisa quais são todas as possibilidades
 de preenchimento para cada posição vazia (marcada com X) encontrada e por fim
 imprime uma nova matriz onde todas as posições vazias foram substituídas por suas
