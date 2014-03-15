@@ -163,11 +163,11 @@ void * sudoku(void *mat){
 
 int main(){
 	short **mat;
-	int n,X,Y,V;
-	int i;
+	int X,Y;
+	int i,j;
 	int resultado;
-	scanf("%d",  &n);
-    
+	short entradaInteira;
+    char entrada;
 	pthread_t thr;
 	
 	//aloca matriz    
@@ -180,9 +180,18 @@ int main(){
 		for (Y = 0; Y < 9 ; Y++)
 			mat[X][Y] = 0;
 	//le entradas
-	while(n--) {
-		scanf("%d %d %d",&X,&Y,&V);
-		mat[X-1][Y-1] = V;
+		/* Entrada da matriz de sudoku inicial. */
+	for(i = 0; i < 9; i++) {
+		for(j = 0; j < 9; j++) {
+			do {
+				scanf("%c", &entrada);
+			} while(entrada == ' ' || entrada == '\n');
+			entradaInteira = (short)(entrada - 48);
+			if(entradaInteira > 9) {
+				entradaInteira = 0;
+			}
+			mat[i][j] = entradaInteira;
+		}
 	}
 	//chama thread
 	pthread_create(&thr, NULL, sudoku, (void *)mat);
