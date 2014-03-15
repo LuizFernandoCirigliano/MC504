@@ -1,0 +1,33 @@
+O módulo sudoku_dica.c recebe como entrada do programa uma
+matriz 9x9 não resolvida de sudoku, isto é, recebe uma matriz
+contendo números de 1 a 9 e posições vazias que devem ser preenchidas
+com um X. Essa matriz de entrada tem o seguinte formato:
+
+X 6 1 X X X X 9 X
+4 3 X X 9 5 X 6 X
+9 X X 1 X 2 X X 3
+X X X 4 X 1 X X 9
+5 X 9 X X X 7 X 1
+6 X X 2 X 9 X X X
+3 X X 9 X 8 X X 6
+X 8 X 7 3 X X 4 2
+X 9 X X X X 3 1 X
+
+A matriz de entrada deve ser uma matriz válida de sudoku, sem repetições
+de elementos em suas linhas, colunas ou quadrantes 3x3, exceto por posições
+vazias é claro.
+
+Uma vez recebida a matriz o programa analisa quais são todas as possibilidades
+de preenchimento para cada posição vazia (marcada com X) encontrada e por fim
+imprime uma nova matriz onde todas as posições vazias foram substituídas por suas
+respectivas possibilidades. A matriz de saída tem o seguinte formato:
+
+(278)  6       1      (38)  (478)  (347) (2458)  9     (4578)
+ 4     3      (278)   (8)    9      5    (128)   6     (78)
+ 9    (57)    (578)    1    (4678)  2    (458)  (578)   3
+(278) (27)    (2378)   4    (5678)  1    (2568) (2358)  9
+ 5    (24)     9      (368) (68)   (36)   7     (238)   1
+ 6    (147)   (3478)   2    (578)   9    (458)  (358)  (458)
+ 3    (12457) (2457)   9    (1245)  8    (5)    (57)    6
+(1)    8      (56)     7     3     (6)   (59)    4      2
+(27)   9      (24567) (56)  (2456) (46)   3      1     (578)
