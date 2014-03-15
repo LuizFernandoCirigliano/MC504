@@ -125,8 +125,7 @@ void* sudoku(void* mat) {
 			if(GlobalThreadCount >= NUMERO_THREADS) {
 				resultado = *((int*)sudoku(matCopy[k-1]));
 
-				/* Se resultado == 1, o sudoku foi completado, desfaz recursão. */				
-
+				/* Se resultado == 1, o sudoku foi completado, desfaz recursão. */
 				if(resultado) {
 					*retorno = 1;
 
@@ -178,7 +177,7 @@ int main() {
 	short** mat;
 	int i, j, resultado;
 	short entradaInteira;
-   char entrada;
+	char entrada;
 
 	pthread_t thr;
 	
