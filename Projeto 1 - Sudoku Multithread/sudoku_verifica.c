@@ -95,12 +95,11 @@ int main() {
 		thread_id[i] = i;	
 		pthread_create(&thr[i], NULL, verificaLinha, (void*) &thread_id[i]);
 	}
-	for (i = i; i < 18; i++ ) {
+	for(i = i; i < 18; i++ ) {
 		thread_id[i] = i%9;	
 		pthread_create(&thr[i], NULL, verificaColuna, (void*) &thread_id[i]);
 	}
-	for (i = i; i < 27; i++)
-	{
+	for(i = i; i < 27; i++) {
 		thread_id[i] = i%9;	
 		pthread_create(&thr[i], NULL, verificaBloco, (void*) &thread_id[i]);
 	}
