@@ -28,4 +28,21 @@ de acordo com o número de erros encontrados em cada matriz.
 
 sudoku_resolve.c:
 
+Para resolver o sudoku, foi adotada uma estratégia de backtracking, usando threads
+para paralelizar o processo. Em cada nível da recursão, era feita uma cópia da matriz,
+para evitar problemas de acesso concorrente. Ao chegar em um ponto no qual existe mais
+de uma possibilidade para completar o quadrado, existem duas possibilidades:
+
+	a) Se o número máximo de threads já está aberto, a continuação da execução ocorre
+	na própria thread. 
+
+	b) Se o número máximo de threads ainda não foi alcançado, cria-se uma nova thread
+	para a possível escolha.
+
+O limite de threads pode não ser respeitado exatamente, pois como não usamos locks, poderia
+haver uma situação de concorrência na qual duas threads são criadas simultaneamente, mas ele
+serve de guia, pois se deixássemos que novas threads fossem criadas para cada nivel da recursão,
+poderia haver problemas de memória.
+
+
 
