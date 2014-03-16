@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define NUMERO_THREADS 9
+#define NUMERO_THREADS 27
 
 typedef enum {false, true} boolean;
 
@@ -91,11 +91,18 @@ int main() {
 	}
 	
 	/* Cada thread verifica uma linha, uma coluna e um quadrante da matriz de sudoku. */
-	for(i = 0; i < NUMERO_THREADS; i++) {
+	for(i = 0; i < 9; i++) {
 		thread_id[i] = i;	
 		pthread_create(&thr[i], NULL, verificaLinha, (void*) &thread_id[i]);
+	}
+	for (i = i; i < 18; i++ ) {
+		thread_id[i] = i%9;	
 		pthread_create(&thr[i], NULL, verificaColuna, (void*) &thread_id[i]);
-	  	pthread_create(&thr[i], NULL, verificaBloco, (void*) &thread_id[i]);
+	}
+	for (i = i; i < 27; i++)
+	{
+		thread_id[i] = i%9;	
+		pthread_create(&thr[i], NULL, verificaBloco, (void*) &thread_id[i]);
 	}
 	
 	/* Aguarda a execução das threads para que  o programa continue. */
