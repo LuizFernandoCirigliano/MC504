@@ -9,11 +9,11 @@
 #include <unistd.h>
 
 volatile int esperando = 0; /* Pessoas esperando o onibus */
-
+volatile int embarcaram = 0, busPassed = 0;
 sem_t sem_onibus, sem_embarcando;
 pthread_mutex_t lock;
 
-WINDOW *history, *bus, *line;
+WINDOW *history, *bus, *line, *stat;
 
 //numero maximo de pessoas esperando na plataforma
 #define MAX_ESPERANDO 10
@@ -23,6 +23,7 @@ WINDOW *history, *bus, *line;
 
 #define PROPORCAO_PASSAGEIRO_ONIBUS 2
 
+/* A janela do historico de ações pode conter no máximo 15 linhas */
 void clearHistory() {
   int x, y;
 	getyx(history, y, x);
@@ -30,6 +31,7 @@ void clearHistory() {
 	  wclear(history);
 }
 
+/* Redesenha a fila de espera */
 void	refreshLine() {
   int i;
   wclear(line);
@@ -44,16 +46,44 @@ void	refreshLine() {
   wrefresh(line);
 }
 
+/* Desnha o ônibus assim  que ele chega */
 void  busArrive() {
   wclear(bus);
   wprintw(bus, "______________________\n|,----.,----.,----.,--.\\\n||    ||    ||    ||   \\\\\n|`----'`----'|----||----\\`.\n[            |   -||- __|(|\n[  ,--.      |____||.--.  |\n=-(( `))-----------(( `))==\n   `--'             `--'");  
   wrefresh(bus);
 }
 
+/* Quando o ônibus parte, apaga a janela do ônibus */
 void busDepart() {
   wclear(bus);
   wrefresh(bus);
 }
+
+/* Atualiza a janela onde são mostradas as estatísticas */
+void refreshStat() {
+  int x, y;
+  wclear(stat);
+  wprintw(stat, "Passageiros\nesperando:\n");
+  getyx(stat, y, x);
+  attron(A_BOLD);
+  mvwprintw(stat, y, 15/2, "%d", esperando);  
+  attroff(A_BOLD);
+
+  wprintw(stat, "\nTotal\npassageiros\nembarcaram:\n");
+  getyx(stat, y, x);
+  attron(A_BOLD);
+  mvwprintw(stat, y, 15/2, "%d", embarcaram);  
+  attroff(A_BOLD);
+  
+  wprintw(stat, "\nTotal\nônibus\npassaram:\n");
+  getyx(stat, y, x);
+  attron(A_BOLD);
+  mvwprintw(stat, y, 15/2, "%d", busPassed);  
+  attroff(A_BOLD);
+  
+  wrefresh(stat); 
+}
+
 void vaiEmbora (int i) {
 	clearHistory();
 	wprintw(history, "passageiro %d vai embora \n" , i);
@@ -67,21 +97,26 @@ void embarcar (int i) {
 	wrefresh(history);
 	
   esperando--;
+  embarcaram++;
   refreshLine();
+  refreshStat();
 	
 	sleep (1);	
 }
+
 void *onibus (void* v) {
 	int id = (int) v;
 	int i = 0, passageiros_para_embarcar;
+	
+	pthread_mutex_lock(&lock);
 	
 	clearHistory();
 	wprintw(history, "onibus %d chegou\n", id);
   wrefresh(history);
   
+  busPassed++;
+  refreshStat();
   busArrive();
-
-	pthread_mutex_lock(&lock);
 
 	clearHistory();
 	wprintw(history, "Comecando embaque no onibus %d\n", id);
@@ -109,11 +144,11 @@ void *onibus (void* v) {
 void *passageiro (void *v) {
 	int id = (int)v;
 	
+	pthread_mutex_lock(&lock);
+	
 	clearHistory();
 	wprintw(history, "passageiro %d chegou\n", id);
 	wrefresh(history);
-
-	pthread_mutex_lock(&lock);
 	
 	//Verifica se plataforma nao esta lotada
 	if (esperando >= MAX_ESPERANDO)  {
@@ -123,6 +158,7 @@ void *passageiro (void *v) {
 	} else {
 		esperando++;
 		refreshLine();
+		refreshStat();
 		pthread_mutex_unlock(&lock);
 	}
   	
@@ -135,16 +171,22 @@ void *passageiro (void *v) {
 }
 
 int main() {
+  /* Inicializa o ncurses */
   initscr();
   
-  history = newwin(15, COLS, LINES-15, 0);
+  /* Inicializa as janelas da animação */
+  history = newwin(15, COLS-15, LINES-15, 0);
   wrefresh(history);
   
-  line = newwin((LINES - 15)/2, COLS, 0, 0);
+  line = newwin((LINES - 15)/2, COLS-15, 0, 0);
   wrefresh(line);
   
-  bus = newwin((LINES - 15)/2, COLS, (LINES - 15)/2, 0);
+  bus = newwin((LINES - 15)/2, COLS-15, (LINES - 15)/2, 0);
   wrefresh(bus);
+  
+  stat = newwin(LINES, 15, 0, COLS-15);
+  wrefresh(stat);
+  /* Fim da inicialização */
   
   pthread_t thr;
   int numOnibus = 0, numPassageiros = 0;
