@@ -11,10 +11,11 @@
 volatile int esperando = 0; /* Pessoas esperando o onibus */
 
 sem_t sem_onibus, sem_embarcando;
-pthread_mutex_t lock;
+pthread_mutex_t lock_onibus, lock_passageiros;
 
 //numero maximo de pessoas esperando na plataforma
 #define MAX_ESPERANDO 10
+#define CAPACIDADE_ONIBUS 50
 
 //quanto maior esse valor , menos onibus passam
 #define ESCASSEZ_DE_ONIBUS 2
@@ -33,25 +34,26 @@ void embarcar (int i) {
 }
 void *onibus (void* v) {
 	int id = (int) v;
-	int i = 0, passageiros_para_embarcar;
+
+	int passageiros_no_onibus = 0;
 
 	printf("onibus %d chegou\n", id);
 	
 
-	pthread_mutex_lock(&lock);
-	
+	pthread_mutex_lock(&lock_onibus);
 	printf("Comecando embaque no onibus %d\n", id);
-	passageiros_para_embarcar = esperando;
-	for (i = 0 ; i  < passageiros_para_embarcar; i ++ ) {
+	
+	while (esperando && passageiros_no_onibus < CAPACIDADE_ONIBUS ) {
 		//manda o proximo embarcar
 		sem_post (&sem_onibus);
 
 		//espera fim do embarque
 		sem_wait (&sem_embarcando);
+		passageiros_no_onibus++;
 	}
 
 	printf("fim de embarque no onibus %d\n", id );
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock_onibus);
 
   return NULL;
 }
@@ -61,16 +63,16 @@ void *passageiro (void *v) {
 	
 	printf("passageiro %d chegou\n", id);
 
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&lock_passageiros);
 	//Verifica se plataforma nao esta lotada
-	if (esperando >= MAX_ESPERANDO  {
-		pthread_mutex_unlock (&lock);
+	if (esperando >= MAX_ESPERANDO)  {
+		pthread_mutex_unlock (&lock_passageiros);
 		vaiEmbora(id);
 		return NULL;
 	} else {
 		esperando++;
 	}
-  	pthread_mutex_unlock(&lock);
+  	pthread_mutex_unlock(&lock_passageiros);
 
 	sem_wait(&sem_onibus);
 	embarcar(id);
@@ -83,7 +85,7 @@ int main() {
   pthread_t thr;
   int numOnibus = 0, numPassageiros = 0;
 
-  if (pthread_mutex_init(&lock, NULL) != 0) {
+  if (pthread_mutex_init(&lock_passageiros, NULL) != 0 || pthread_mutex_init(&lock_onibus, NULL) != 0) {
         printf("\n mutex falhou\n");
         return 1;
   }
@@ -93,7 +95,7 @@ int main() {
 
   while (1) {
   	sleep (1);
-    if (random() % (MAX_ESPERANDO * PROPORCAO_PASSAGEIRO_ONIBUS) == 1) 
+    if (random() % (MAX_ESPERANDO * ESCASSEZ_DE_ONIBUS) == 1) 
       pthread_create(&thr, NULL, onibus, (void*) numOnibus++);
     else
       pthread_create(&thr, NULL, passageiro, (void*) numPassageiros++);
