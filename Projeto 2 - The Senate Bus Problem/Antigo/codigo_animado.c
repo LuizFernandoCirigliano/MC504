@@ -95,21 +95,21 @@ void embarcar (int i) {
   clearHistory();
 	wprintw(history, "passageiro %d embarcou \n" , i);
 	wrefresh(history);
-	
+
   esperando--;
   embarcaram++;
   refreshLine();
   refreshStat();
-	
+
 	sleep (1);	
 }
 
 void *onibus (void* v) {
 	int id = (int) v;
 	int i = 0, passageiros_para_embarcar;
-	
+
 	pthread_mutex_lock(&lock);
-	
+
 	clearHistory();
 	wprintw(history, "onibus %d chegou\n", id);
   wrefresh(history);
@@ -121,7 +121,7 @@ void *onibus (void* v) {
 	clearHistory();
 	wprintw(history, "Comecando embaque no onibus %d\n", id);
 	wrefresh(history);
-	
+
 	passageiros_para_embarcar = esperando;
 	for (i = 0 ; i  < passageiros_para_embarcar; i ++ ) {
 		//manda o proximo embarcar
@@ -135,7 +135,7 @@ void *onibus (void* v) {
 	wprintw(history, "fim de embarque no onibus %d\n", id );
 	wrefresh(history);
 	busDepart();
-	
+
 	pthread_mutex_unlock(&lock);
 
   return NULL;
@@ -143,13 +143,13 @@ void *onibus (void* v) {
 
 void *passageiro (void *v) {
 	int id = (int)v;
-	
+
 	pthread_mutex_lock(&lock);
-	
+
 	clearHistory();
 	wprintw(history, "passageiro %d chegou\n", id);
 	wrefresh(history);
-	
+
 	//Verifica se plataforma nao esta lotada
 	if (esperando >= MAX_ESPERANDO)  {
 		pthread_mutex_unlock (&lock);
@@ -166,7 +166,7 @@ void *passageiro (void *v) {
 	sem_wait(&sem_onibus);
 	embarcar(id);
 	sem_post(&sem_embarcando);
-	
+
 	return NULL;
 }
 

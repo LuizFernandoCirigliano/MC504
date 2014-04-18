@@ -63,11 +63,12 @@ void *passageiro (void *v) {
 
 	pthread_mutex_lock(&lock);
 	//Verifica se plataforma nao esta lotada
-	if (esperando >= MAX_ESPERANDO  {
+	if (esperando >= MAX_ESPERANDO)  {
 		pthread_mutex_unlock (&lock);
 		vaiEmbora(id);
 		return NULL;
-	} else {
+	} 
+	else {
 		esperando++;
 	}
   	pthread_mutex_unlock(&lock);
