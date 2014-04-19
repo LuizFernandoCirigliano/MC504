@@ -94,6 +94,8 @@ int main() {
 	pthread_attr_t  attrs;
 	int i, numOnibus = 0, numPassageiros = 0;    
 
+	srand(time(NULL));
+
    pthread_attr_init(&attrs);
    pthread_attr_setstacksize(&attrs, THREADSTACK);
 	
@@ -112,7 +114,7 @@ int main() {
 			pthread_create(&thr[i], &attrs, onibus, (void*) numOnibus++);
 		else
 			pthread_create(&thr[i], &attrs, passageiro, (void*) numPassageiros++);
-		usleep((random() % 3)*1500000);
+		usleep((random() % 6)*1500000);
 	}
 
 	endwin();
