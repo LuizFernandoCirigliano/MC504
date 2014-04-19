@@ -48,68 +48,27 @@ void refreshLine() {
 
 /* Desnha o ônibus assim  que ele chega */
 void busArrive() {
+  mvwin(bus, (int)LINES/4 , 0) ;
   wclear(bus);
-  
-  
-  
   wprintw(bus, "______________________\n|,----.,----.,----.,--.\\\n||    ||    ||    ||   \\\\\n|`----'`----'|----||----\\`.\n[            |   -||- __|(|\n[  ,--.      |____||.--.  |\n=-(( `))-----------(( `))==\n   `--'             `--'");  
   wrefresh(bus);
 }
 
 /* Quando o ônibus parte, apaga a janela do ônibus. */
 void busDepart() {
-	int i, j;
+	int i =0 ;
 	
-	char str[29];
-	char str1[29] = "______________________";
-	char str2[29] = "|,----.,----.,----.,--.\\";
-	char str3[29] = "||    ||    ||    ||   \\\\";
-	char str4[29] = "|`----'`----'|----||----\\`.";
-	char str5[29] = "[            |   -||- __|(|";
-	char str6[29] = "[  ,--.      |____||.--.  |";
-	char str7[29] = "=-(( `))-----------(( `))==";
-	char str8[29] = "   `--'             `--'";
+	while(mvwin(bus, (int)LINES/4 , i++) != -1) {
 	
-	for(i = 0; i <= COLS; i++) {
-		if(COLS - i > 29)
-			j = 29;
-		else
-			j = COLS - i
-			;
-		wclear(bus);
-		memset (str,'\0', 29);
-		strncpy(str, str1, j);
-		mvwaddstr(bus, 0, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str2, j);
-		mvwaddstr(bus, 1, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str3, j);
-		mvwaddstr(bus, 2, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str4, j);
-		mvwaddstr(bus, 3, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str5, j);
-		mvwaddstr(bus, 4, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str6, j);
-		mvwaddstr(bus, 5, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str7, j);
-		mvwaddstr(bus, 6, i, str);
-		memset (str,'\0', 29);
-		strncpy(str, str8, j);
-		mvwaddstr(bus, 7, i, str);
-		
-		usleep(50000);
 		wrefresh(bus);
+
+		usleep(50000);
+
 	}
-	
 	wclear(bus);
+	wrefresh(bus);
 }
 
-/* Atualiza a janela onde são mostradas as estatísticas */
 void refreshStat() {
 	wclear(stat);  
 
@@ -265,7 +224,7 @@ int main() {
 	ponto = newwin((int)LINES/4, COLS, 0, 0);	
 	wrefresh(ponto);
 	
-	bus = newwin((int)LINES/2, COLS, (int)LINES/4, 0);
+	bus = newwin((int)LINES/2, COLS/4, (int)LINES/4, 0);
 	wrefresh(bus);
 	
 	history = newwin((int)LINES/4, (int)COLS/2, (int)3*LINES/4, 0);
