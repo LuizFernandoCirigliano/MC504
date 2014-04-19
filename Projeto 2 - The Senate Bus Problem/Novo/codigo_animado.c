@@ -96,14 +96,14 @@ int main() {
 
 	srand(time(NULL));
 
-   pthread_attr_init(&attrs);
-   pthread_attr_setstacksize(&attrs, THREADSTACK);
+	pthread_attr_init(&attrs);
+	pthread_attr_setstacksize(&attrs, THREADSTACK);
 	
 	if(pthread_mutex_init(&lock_passageiros, NULL) != 0 || pthread_mutex_init(&lock_onibus, NULL) != 0 ||
 		pthread_mutex_init(&lock_ponto, NULL) != 0) {
-   	endwin();
-      printf("Mutex falhou.\n");
-      exit(1);
+		endwin();
+		printf("Mutex falhou.\n");
+		exit(1);
 	}
 	
 	sem_init(&sem_onibus, 0, 0);
@@ -375,7 +375,7 @@ void passenger_goes_away(int id) {
 	doupdate();
 	usleep(200000);
 	sprintf(message, "passageiro %d foi embora", id);
-	print_in_history(message, COLOR_PAIR(1));
+	print_in_history(message, COLOR_PAIR(2));
 	wattroff(ponto, COLOR_PAIR(2));
 	wattroff(ponto, A_BOLD);
 	pthread_mutex_unlock(&lock_ponto);
