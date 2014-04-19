@@ -278,8 +278,8 @@ void passenger_arrive(int id) {
 	sprintf(message, "passageiro %d chegou", id);
 	print_in_history(message, COLOR_PAIR(2));
 	esperando++;
-	pthread_mutex_unlock(&lock_ponto);
 	print_in_stat();
+	pthread_mutex_unlock(&lock_ponto);
 }
 
 void passenger_depart(int id) {
