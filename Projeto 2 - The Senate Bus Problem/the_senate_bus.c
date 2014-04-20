@@ -19,14 +19,9 @@
 /* Tamanho da pilha de cada thread. */
 #define THREADSTACK  32000
 
-/**Parametros variáveis**/
-/* Número máximo de pessoas esperando pelo ônibus na plataforma. */
-#define MAX_ESPERANDO 15
-/* Número máximo de pessoas que um ônibus pode transportar. */
-#define CAPACIDADE_ONIBUS 10
 /* Tempo entre passagem de 2 onibus. */
 #define INTERVALO_ONIBUS 25
-/* Tempo maximo possivel entre chegada de 2 pasageiros */
+/* Tempo máximo possível entre chegada de 2 pasageiros. */
 #define INVERVALO_MAX_PASSAGEIROS 6
 
 void inicializar_janelas();
@@ -40,12 +35,19 @@ void passenger_goes_away(int);
 void terminal_mudou_tamanho(int);
 void* passageiro(void*);
 void* onibus(void*);
-void* geraPassageiros(void* v);
-void* geraOnibus (void* v);
+void* geraPassageiros(void*);
+void* geraOnibus(void*);
+
+/** Parâmetros variáveis **/
 
 volatile int esperando = 0;			/* Contador que marca o número de pessoas esperando o ônibus. */
 volatile int embarcaram = 0;			/* Contador que marca o número de pessoas que embarcaram no ônibus. */
 volatile int busPassed = 0;			/* Contador que marca o número de ônibus que passaram pelo ponto. */
+
+/* Número máximo de pessoas esperando pelo ônibus na plataforma. */
+volatile int max_passageiros_ponto = 0;
+/* Número máximo de pessoas que um ônibus pode transportar. */
+volatile int capacidade_onibus = 0;
 
 sem_t sem_onibus, sem_embarcando;
 pthread_mutex_t lock_onibus, lock_passageiros, lock_ponto;
@@ -56,7 +58,18 @@ WINDOW *ponto, *bus, *history, *stat;
 PANEL	*my_panels[4];
 
 /*Inicializa variaveis e entra num loop que gera threads de onibus ou passageiro aleatoriamente*/
-int main() {	
+int main() {
+	/* Entrada dos parâmetros. */
+	do {
+		printf("Máximo de passageiros esperando no ponto (1 a 10): ");
+		scanf("%d", &max_passageiros_ponto);
+	} while(max_passageiros_ponto < 1 || max_passageiros_ponto > 10);
+	
+	do {
+		printf("Capacidade máxima do ônibus (1 a 15): ");
+		scanf("%d", &capacidade_onibus);
+	} while(capacidade_onibus < 1 || capacidade_onibus > 15);
+	
 	/* Instala um novo tratador para o sinal recebido quando a janela do terminal muda de tamanho. */
 	signal(SIGWINCH, terminal_mudou_tamanho);
   
@@ -99,8 +112,6 @@ int main() {
   
 	pthread_t thr[2];
 	pthread_attr_t  attrs;
-
-
 	
 	pthread_attr_init(&attrs);
 	pthread_attr_setstacksize(&attrs, THREADSTACK);
@@ -115,7 +126,6 @@ int main() {
 	
 	sem_init(&sem_onibus, 0, 0);
 	sem_init(&sem_embarcando, 0, 0);
-
   
 	pthread_create(&thr[0], &attrs, geraPassageiros,NULL);
 	pthread_create(&thr[1], &attrs, geraOnibus,NULL);
@@ -128,7 +138,6 @@ int main() {
 	return 0;
 }
 
-
 void* geraPassageiros(void* v) {
 	pthread_t p;
 	int numPassageiros = 0;
@@ -139,17 +148,15 @@ void* geraPassageiros(void* v) {
 	
 	srand(time(NULL));
 
-
-	while (1) {
+	while(1) {
 		pthread_create(&p, &attrs, passageiro, (void*) numPassageiros++);
 		sleep(rand()%INVERVALO_MAX_PASSAGEIROS);
 	}
 
 	pthread_exit(NULL);
-}	
+}
 
-
-void* geraOnibus (void* v) {
+void* geraOnibus(void* v) {
 	pthread_t o;
 	int numOnibus = 0;
 
@@ -157,13 +164,14 @@ void* geraOnibus (void* v) {
 	pthread_attr_init(&attrs);
 	pthread_attr_setstacksize(&attrs, THREADSTACK);
 	
-	while (1) {
-		pthread_create(&o, &attrs, onibus, (void*) numOnibus++);
+	while(1) {
 		sleep(INTERVALO_ONIBUS);
+		pthread_create(&o, &attrs, onibus, (void*) numOnibus++);		
 	}
 
 	pthread_exit(NULL);
 }
+
 /*Funcao que simula o comportamento dos passageiros*/
 void* passageiro(void* v) {
 	int id = (int)v;
@@ -171,7 +179,7 @@ void* passageiro(void* v) {
 	pthread_mutex_lock(&lock_passageiros);
 	
 	/* Verifica se a plataforma está lotada. */
-	if(esperando >= MAX_ESPERANDO) {
+	if(esperando >= max_passageiros_ponto) {
 		/* Se a plataforma já está lotada, o novo passageiro vai embora. */
 		passenger_goes_away(id);		
 		pthread_mutex_unlock (&lock_passageiros);
@@ -199,7 +207,7 @@ void* onibus(void* v) {
 
 	bus_arrive(id);
 
-	while(esperando > 0 && passageiros_no_onibus < CAPACIDADE_ONIBUS) {
+	while(esperando > 0 && passageiros_no_onibus < capacidade_onibus) {
 		/* Manda o próximo passageiro embarcar. */
 		sem_post (&sem_onibus);
 
@@ -443,7 +451,7 @@ void passenger_depart(int id) {
 }
 
 /* Função que é chamada quando um passageiro chega no ponto, mas ele já está lotado
-	e então vai embora. */
+   e então vai embora. */
 void passenger_goes_away(int id) {
 	pthread_mutex_lock(&lock_ponto);
 	int tamanho_esperando = 4*esperando;
