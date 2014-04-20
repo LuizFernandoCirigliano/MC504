@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -g -Wall -pthread -lncurses
-TARGET = codigo_animado
+CFLAGS = -g -Wall -pthread -lncurses -lpanel
+TARGET = the_senate_bus
 
 all: $(TARGET)
 
