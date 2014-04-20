@@ -1,4 +1,5 @@
 /*
+*   ---- The Senate Bus Problem ----
 *	Grupo:
 *		Ulisses Malta Santos						140958
 *		Luiz Fernando Cirigliano Villela		136734
@@ -15,15 +16,18 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-/* Número máximo de pessoas esperando pelo ônibus na plataforma. */
-#define MAX_ESPERANDO 10
-/* Número máximo de pessoas que um ônibus pode transportar. */
-#define CAPACIDADE_ONIBUS 15
-#define PROPORCAO_PASSAGEIRO_ONIBUS 2
 /* Tamanho da pilha de cada thread. */
-#define THREADSTACK  65536
-/* Número máximo de threads alocadas. */
-#define MAX_THREADS  10000
+#define THREADSTACK  32000
+
+/**Parametros variáveis**/
+/* Número máximo de pessoas esperando pelo ônibus na plataforma. */
+#define MAX_ESPERANDO 15
+/* Número máximo de pessoas que um ônibus pode transportar. */
+#define CAPACIDADE_ONIBUS 10
+/* Tempo entre passagem de 2 onibus. */
+#define INTERVALO_ONIBUS 25
+/* Tempo maximo possivel entre chegada de 2 pasageiros */
+#define INVERVALO_MAX_PASSAGEIROS 6
 
 void inicializar_janelas();
 void print_in_history(char*, chtype);
@@ -36,6 +40,8 @@ void passenger_goes_away(int);
 void terminal_mudou_tamanho(int);
 void* passageiro(void*);
 void* onibus(void*);
+void* geraPassageiros(void* v);
+void* geraOnibus (void* v);
 
 volatile int esperando = 0;			/* Contador que marca o número de pessoas esperando o ônibus. */
 volatile int embarcaram = 0;			/* Contador que marca o número de pessoas que embarcaram no ônibus. */
@@ -49,6 +55,7 @@ WINDOW *ponto, *bus, *history, *stat;
 
 PANEL	*my_panels[4];
 
+/*Inicializa variaveis e entra num loop que gera threads de onibus ou passageiro aleatoriamente*/
 int main() {	
 	/* Instala um novo tratador para o sinal recebido quando a janela do terminal muda de tamanho. */
 	signal(SIGWINCH, terminal_mudou_tamanho);
@@ -90,12 +97,11 @@ int main() {
 	
 	print_in_stat();
   
-	pthread_t thr[MAX_THREADS];
+	pthread_t thr[2];
 	pthread_attr_t  attrs;
-	int i, numOnibus = 0, numPassageiros = 0;    
 
-	srand(time(NULL));
 
+	
 	pthread_attr_init(&attrs);
 	pthread_attr_setstacksize(&attrs, THREADSTACK);
 	
@@ -109,18 +115,98 @@ int main() {
 	sem_init(&sem_onibus, 0, 0);
 	sem_init(&sem_embarcando, 0, 0);
   
-	for(i = 0 ; i < MAX_THREADS; i++) {
-		if(random() % (MAX_ESPERANDO * PROPORCAO_PASSAGEIRO_ONIBUS) == 1) 
-			pthread_create(&thr[i], &attrs, onibus, (void*) numOnibus++);
-		else
-			pthread_create(&thr[i], &attrs, passageiro, (void*) numPassageiros++);
-		usleep((random() % 6)*1500000);
-	}
-
+	pthread_create(&thr[0], &attrs, geraPassageiros,NULL);
+	pthread_create(&thr[1], &attrs, geraOnibus,NULL);
+		
+	pthread_join (thr[0] , NULL);
+	pthread_join (thr[1] , NULL);
 	endwin();
 
 	return 0;
 }
+
+void* geraPassageiros(void* v) {
+	pthread_t p;
+	int numPassageiros = 0;
+
+	pthread_attr_t  attrs;
+	pthread_attr_init(&attrs);
+	pthread_attr_setstacksize(&attrs, THREADSTACK);
+	
+	srand(time(NULL));
+
+
+	while (1) {
+		pthread_create(&p, &attrs, passageiro, (void*) numPassageiros++);
+		sleep(rand()%INVERVALO_MAX_PASSAGEIROS);
+	}
+}	
+
+
+void* geraOnibus (void* v) {
+	pthread_t o;
+	int numOnibus = 0;
+
+	pthread_attr_t  attrs;
+	pthread_attr_init(&attrs);
+	pthread_attr_setstacksize(&attrs, THREADSTACK);
+	
+	while (1) {
+		pthread_create(&o, &attrs, onibus, (void*) numOnibus++);
+		sleep(INTERVALO_ONIBUS);
+	}
+}
+/*Funcao que simula o comportamento dos passageiros*/
+void* passageiro(void* v) {
+	int id = (int)v;
+
+	pthread_mutex_lock(&lock_passageiros);
+	
+	/* Verifica se a plataforma está lotada. */
+	if(esperando >= MAX_ESPERANDO) {
+		/* Se a plataforma já está lotada, o novo passageiro vai embora. */
+		passenger_goes_away(id);		
+		pthread_mutex_unlock (&lock_passageiros);
+		pthread_exit(NULL);
+ 	} 
+	else {
+		/* Caso contrário, ele fica esperando o ônibus. */		
+		passenger_arrive(id);
+		pthread_mutex_unlock(&lock_passageiros);
+	}  	
+
+	sem_wait(&sem_onibus);
+	passenger_depart(id);
+	sem_post(&sem_embarcando);
+
+	pthread_exit(NULL);
+}
+
+/*Funcao que simula comportamento de onibus*/
+void* onibus(void* v) {
+	int id = (int)v;
+	int passageiros_no_onibus = 0;
+
+	pthread_mutex_lock(&lock_onibus);
+
+	bus_arrive(id);
+
+	while(esperando > 0 && passageiros_no_onibus < CAPACIDADE_ONIBUS) {
+		/* Manda o próximo passageiro embarcar. */
+		sem_post (&sem_onibus);
+
+		/* Espera o fim do embarque. */
+		sem_wait (&sem_embarcando);
+		passageiros_no_onibus++;
+	}
+
+	bus_depart(id);
+
+	pthread_mutex_unlock(&lock_onibus);
+
+	pthread_exit(NULL);
+}
+
 
 void terminal_mudou_tamanho(int sinal) {
 	endwin();
@@ -215,7 +301,9 @@ void bus_arrive(int id) {
 	char message[29];
 	sprintf(message, "ônibus %d chegou", id);
 	print_in_history(message, COLOR_PAIR(3));
+	
 	busPassed++;
+	
 	print_in_stat();
 }
 
@@ -279,7 +367,9 @@ void passenger_arrive(int id) {
 	char message[29];
 	sprintf(message, "passageiro %d chegou", id);
 	print_in_history(message, COLOR_PAIR(2));
+	
 	esperando++;
+	
 	print_in_stat();
 	pthread_mutex_unlock(&lock_ponto);
 }
@@ -309,8 +399,10 @@ void passenger_depart(int id) {
 	char message[29];
 	sprintf(message, "passageiro %d embarcou", id);
 	print_in_history(message, COLOR_PAIR(1));
+	
 	esperando--;
 	embarcaram++;
+
 	print_in_stat();
 	usleep(200000);
 	int i, j = 4, k = esperando;
@@ -380,53 +472,3 @@ void passenger_goes_away(int id) {
 	wattroff(ponto, A_BOLD);
 	pthread_mutex_unlock(&lock_ponto);
 }
-
-void* passageiro(void* v) {
-	int id = (int)v;
-
-	pthread_mutex_lock(&lock_passageiros);
-	
-	/* Verifica se a plataforma está lotada. */
-	if(esperando >= MAX_ESPERANDO) {
-		/* Se a plataforma já está lotada, o novo passageiro vai embora. */
-		passenger_goes_away(id);		
-		pthread_mutex_unlock (&lock_passageiros);
-		pthread_exit(NULL);
- 	} 
-	else {
-		/* Caso contrário, ele fica esperando o ônibus. */		
-		passenger_arrive(id);
-		pthread_mutex_unlock(&lock_passageiros);
-	}  	
-
-	sem_wait(&sem_onibus);
-	passenger_depart(id);
-	sem_post(&sem_embarcando);
-
-	pthread_exit(NULL);
-}
-
-void* onibus(void* v) {
-	int id = (int)v;
-	int passageiros_no_onibus = 0;
-
-	pthread_mutex_lock(&lock_onibus);
-
-	bus_arrive(id);
-
-	while(esperando > 0 && passageiros_no_onibus < CAPACIDADE_ONIBUS) {
-		/* Manda o próximo passageiro embarcar. */
-		sem_post (&sem_onibus);
-
-		/* Espera o fim do embarque. */
-		sem_wait (&sem_embarcando);
-		passageiros_no_onibus++;
-	}
-
-	bus_depart(id);
-
-	pthread_mutex_unlock(&lock_onibus);
-
-	pthread_exit(NULL);
-}
-
