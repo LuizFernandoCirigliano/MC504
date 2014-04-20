@@ -1,0 +1,23 @@
+Grupo:
+	Ulisses Malta Santos						140958
+	Luiz Fernando Cirigliano Villela		136734
+	José Ernesto Stelzer Monar				139553
+
+Descrição do problema - The Senate Bus
+
+Passageiros chegam a um ponto de ônibus e aguardam um ônibus chegar para que possam embarcar.
+Apenas 10 pessoas podem ficar esperando o ônibus no ponto, se algum passageiro chega enquanto
+o ponto está lotado ele vai embora. Quando o ônibus chega o embarque começa e os passageiros
+que estão no ponto entram no ônibus pela ordem de chegada (o primeiro a chegar é o primeiro a
+entrar no ônibus). O ônibus tem a capacidade de transportar até 15 passageiros e, desse modo,
+se algum passageiro chegar durante o embarque ainda tem a chance de conseguir embarcar e não
+ter que esperar o próximo ônibus chegar. Depois que 15 passageiros entram no ônibus ou que o
+potnto fique vazio o ônibus parte e então a fila começa a se formar novamente no ponto a espera
+de outro ônibus. Se o ônibus chegar e o ponto estiver vazio ele parte imediatamente.
+
+Para o programa funcionar corretamente:
+- Deve ser executado em um ambiente linux com a biblioteca ncurses instalada.
+- Deve ser executado em um terminal com suporte a cores.
+- A janela do terminal deve ter pelo menos 20 linhas e 40 colunas.
+- O terminal não deve ser redimensionado durante a execução do programa.
+- O terminal deve ter o fundo preto para que a animação seja vista da melhor forma possível.
