@@ -105,6 +105,7 @@ int main() {
 	pthread_attr_init(&attrs);
 	pthread_attr_setstacksize(&attrs, THREADSTACK);
 	
+	/* Verifica se os locks foram inicializados corretamente. */
 	if(pthread_mutex_init(&lock_passageiros, NULL) != 0 || pthread_mutex_init(&lock_onibus, NULL) != 0 ||
 		pthread_mutex_init(&lock_ponto, NULL) != 0) {
 		endwin();
@@ -114,16 +115,19 @@ int main() {
 	
 	sem_init(&sem_onibus, 0, 0);
 	sem_init(&sem_embarcando, 0, 0);
+
   
 	pthread_create(&thr[0], &attrs, geraPassageiros,NULL);
 	pthread_create(&thr[1], &attrs, geraOnibus,NULL);
 		
 	pthread_join (thr[0] , NULL);
 	pthread_join (thr[1] , NULL);
+
 	endwin();
 
 	return 0;
 }
+
 
 void* geraPassageiros(void* v) {
 	pthread_t p;
@@ -140,6 +144,8 @@ void* geraPassageiros(void* v) {
 		pthread_create(&p, &attrs, passageiro, (void*) numPassageiros++);
 		sleep(rand()%INVERVALO_MAX_PASSAGEIROS);
 	}
+
+	pthread_exit(NULL);
 }	
 
 
@@ -155,6 +161,8 @@ void* geraOnibus (void* v) {
 		pthread_create(&o, &attrs, onibus, (void*) numOnibus++);
 		sleep(INTERVALO_ONIBUS);
 	}
+
+	pthread_exit(NULL);
 }
 /*Funcao que simula o comportamento dos passageiros*/
 void* passageiro(void* v) {
@@ -207,6 +215,7 @@ void* onibus(void* v) {
 	pthread_exit(NULL);
 }
 
+/* Tratador que é chamado quando o terminal é redimensionado. */
 
 void terminal_mudou_tamanho(int sinal) {
 	endwin();
@@ -231,11 +240,14 @@ void inicializar_janelas() {
 	wattroff(stat, COLOR_PAIR(2));
 }
 
+/* Função que imprime mensagens na janela de histórico. */
 void print_in_history(char* string, chtype color) {	
 	int x, y;
 	static int linha = 1;
 	if(history == NULL) return;
+	/* Verifica se ainda há espaço na janela para imprimir a mensagem. */
 	if(linha == ((int)LINES/4)-1) {
+		/* Se a janela estiver cheia, é apagada para dar lugar a nova mensagem. */
 		wclear(history);
 		wattron(history, COLOR_PAIR(2));
 		wborder(history, '|', '|', '-', '-', '+', '-', '+', '-');
@@ -245,6 +257,7 @@ void print_in_history(char* string, chtype color) {
 	getmaxyx(history, y, x);
 	y = linha;
 	x = (int)(x - strlen(string))/2;
+	/* Imprime a mensagem no centro da janela de acordo com a cor recebida como parâmetro. */
 	wattron(history, A_BOLD);
 	wattron(history, color);
 	mvwprintw(history, y, x, "%s", string);	
@@ -256,6 +269,7 @@ void print_in_history(char* string, chtype color) {
 	doupdate();
 }
 
+/* Função que atualiza a janela de estatísticas. */
 void print_in_stat() {
 	wclear(stat);	
 	wattron(stat, A_BOLD);
@@ -271,6 +285,7 @@ void print_in_stat() {
 	doupdate();
 }
 
+/* Função que imprime na tela o ônibus chegando no ponto. */
 void bus_arrive(int id) {
 	int i, j;	
 	char* p[8];	
@@ -307,6 +322,7 @@ void bus_arrive(int id) {
 	print_in_stat();
 }
 
+/* Função que imprime na tela o ônibus saindo do ponto e indo embora. */
 void bus_depart(int id) {
 	int i, j, k;	
 	char* p[8];	
@@ -341,6 +357,7 @@ void bus_depart(int id) {
 	wattroff(bus, A_BOLD);
 }
 
+/* Função que mostra um passageiro chegando no ponto. */
 void passenger_arrive(int id) {
 	pthread_mutex_lock(&lock_ponto);
 	int tamanho_esperando = 4*esperando;
@@ -374,6 +391,7 @@ void passenger_arrive(int id) {
 	pthread_mutex_unlock(&lock_ponto);
 }
 
+/* Função que mostra o passageiro embarcando no ônibus. */
 void passenger_depart(int id) {
 	pthread_mutex_lock(&lock_ponto);
 	wattron(ponto, A_BOLD);
@@ -424,6 +442,8 @@ void passenger_depart(int id) {
 	pthread_mutex_unlock(&lock_ponto);
 }
 
+/* Função que é chamada quando um passageiro chega no ponto, mas ele já está lotado
+	e então vai embora. */
 void passenger_goes_away(int id) {
 	pthread_mutex_lock(&lock_ponto);
 	int tamanho_esperando = 4*esperando;
