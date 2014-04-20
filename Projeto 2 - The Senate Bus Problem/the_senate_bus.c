@@ -20,9 +20,9 @@
 #define THREADSTACK  32000
 
 /* Tempo entre passagem de 2 onibus. */
-#define INTERVALO_ONIBUS 25
+#define INTERVALO_ONIBUS 30
 /* Tempo máximo possível entre chegada de 2 pasageiros. */
-#define INVERVALO_MAX_PASSAGEIROS 6
+#define INVERVALO_MAX_PASSAGEIROS 10
 
 void inicializar_janelas();
 void print_in_history(char*, chtype);
