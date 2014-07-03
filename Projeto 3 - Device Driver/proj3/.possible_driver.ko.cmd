@@ -1,0 +1,1 @@
+cmd_drivers/proj3/possible_driver.ko := ld -r -m elf_i386 -T /home/luiz/Downloads/MC504/mc504-linux/linux-3.14.4/scripts/module-common.lds --build-id  -o drivers/proj3/possible_driver.ko drivers/proj3/possible_driver.o drivers/proj3/possible_driver.mod.o
