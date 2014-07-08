@@ -1,2 +1,2 @@
-As respostas dos testes foram obtidas considerando-se que inicialmente as frequ"encias de cada letra
+As respostas dos testes foram obtidas considerando-se que inicialmente as frequências de cada letra
 estavam zeradas.
