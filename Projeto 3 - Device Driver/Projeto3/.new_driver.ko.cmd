@@ -1,0 +1,1 @@
+cmd_drivers/Projeto3/new_driver.ko := ld -r -m elf_i386 -T /home/ulisses/Documents/MC504/mc504-linux/linux-3.14.4/scripts/module-common.lds --build-id  -o drivers/Projeto3/new_driver.ko drivers/Projeto3/new_driver.o drivers/Projeto3/new_driver.mod.o
