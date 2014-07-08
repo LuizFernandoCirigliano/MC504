@@ -45,15 +45,15 @@ Intruções para rodar e testar o driver no ambiente QEMU:
 
 - Execute o arquivo new_driver_ioctl com um dos seguintes comandos:
 	
-	- Para imprimir a frequência registrada de cada caracter:
+	- Para imprimir a frequência registrada de cada caractere:
 	
 		./new_driver_ioctl
 
-	- Para setar o texto de até 500 caracteres do qual se deseja contar a frequência de cada caracter:
+	- Para setar o texto de até 500 caracteres do qual se deseja contar a frequência de cada caractere:
 
 		./new_driver_ioctl -s
 
-	- Para zerar a frequência de cada caracter:	
+	- Para zerar a frequência de cada caractere:	
 	
 		./new_driver_ioctl -c
 

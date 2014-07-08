@@ -24,16 +24,13 @@ typedef struct
 void get_vars(int fd)
 {
 	int i;
-	char aux[20];
 	query_arg_t q;
 	if(ioctl(fd, QUERY_GET_COUNT, &q) == -1) {
 		perror("Erro ioctl ao contar letras.");
 	}
 	else {
 		for(i = 0; i < 26; i+=2) {
-			sprintf(aux, "%c: %d  |  %c: %d", (char)(i + 65), q.count[i], (char)(i + 66), q.count[i + 1]);
-			puts(aux);
-			memset(aux, '\0', 20);		
+			printf("%c: %d  |  %c: %d\\n", (char)(i + 65), q.count[i], (char)(i + 66), q.count[i + 1]);
 		}
 	}
 }
@@ -47,7 +44,7 @@ void set_vars(int fd)
 {
 	query_arg_t q;
 	printf("Digite um texto (ate 500 caracteres): ");
-	scanf("%s", q.text);
+	scanf("%[^\\n]s", q.text);
 	if(ioctl(fd, QUERY_SET_TEXT, &q) == -1) {
 	  perror("Erro ioctl ao setar texto.");
 	}
@@ -72,12 +69,12 @@ int main(int argc, char *argv[])
 			option = e_set;
 		}
 		else {
-			fprintf(stderr, "Erro - flags: %s [-g | -c | -s]\n", argv[0]);
+			fprintf(stderr, "Erro - flags: %s [-g | -c | -s]\\n", argv[0]);
 			return 1;
 		}
 	}
 	else {
-		fprintf(stderr, "Erro - flags: %s [-g | -c | -s]\n", argv[0]);
+		fprintf(stderr, "Erro - flags: %s [-g | -c | -s]\\n", argv[0]);
 		return 1;
 	}
 	fd = open(file_name, O_RDWR);

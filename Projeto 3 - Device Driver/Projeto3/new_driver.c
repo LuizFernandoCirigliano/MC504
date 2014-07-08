@@ -31,7 +31,6 @@ static struct cdev c_dev;
 static struct class *my_class;
 
 static int *count;
-static char *text;
 
 static int memory_open(struct inode *i, struct file *f) 
 {
@@ -67,7 +66,6 @@ static long my_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 		}
 		case QUERY_CLR_TEXT: {
 			memset(count, 0, sizeof(int)*26);
-			memset(text, '\0', 500);
 			break;
 		}
 		case QUERY_SET_TEXT: {
@@ -75,11 +73,10 @@ static long my_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
     			return -EACCES;
 			}
 			for(i = 0; i < 500; i++) {
-				text[i] = q.text[i];
-				if(text[i] == '\0') {
+				if(q.text[i] == '\0') {
 					break;
 				}
-				j = (int)text[i];
+				j = (int)q.text[i];
 				j -= 65;
 				if(j >= 0) {
 					if(j > 25) {
@@ -131,15 +128,13 @@ static int __init my_driver_init(void)
 		return -1;
 	}
 	count = kmalloc(sizeof(int)*26, GFP_KERNEL);
-	text = kmalloc(sizeof(char)*500, GFP_KERNEL);
-	if(!count || !text) {
+	if(!count) {
 		device_destroy(my_class, device_number);
 		class_destroy(my_class);
 		unregister_chrdev_region(device_number, 1);
 		return -1;
 	}
 	memset(count, 0, sizeof(int)*26);
-	memset(text, '\0', 500);
 	return 0;
 }
 
@@ -152,9 +147,6 @@ static void __exit my_driver_exit(void)
 	unregister_chrdev_region(device_number, 1);
 	if(count) {
 		kfree(count);
-	}
-	if(text) {
-		kfree(text);
 	}
 }
 
