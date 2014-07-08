@@ -12,7 +12,7 @@
 typedef struct
 {
 	int count[26];
-	char text[500];
+	char c;
 } query_arg_t;
  
 #define QUERY_GET_COUNT _IOR('q', 1, query_arg_t *)
@@ -42,12 +42,15 @@ void clr_vars(int fd)
 }
 void set_vars(int fd)
 {
+	int i = 0;
 	query_arg_t q;
-	printf("Digite um texto (ate 500 caracteres): ");
-	scanf("%[^\\n]s", q.text);
-	if(ioctl(fd, QUERY_SET_TEXT, &q) == -1) {
-	  perror("Erro ioctl ao setar texto.");
-	}
+	printf("Digite um texto: ");
+	do {
+		scanf("%c", &q.c);
+		if(ioctl(fd, QUERY_SET_TEXT, &q) == -1) {
+			perror("Erro ioctl ao setar texto.");
+		}
+	} while(q.c != '\\n');
 }
  
 int main(int argc, char *argv[])
@@ -84,7 +87,7 @@ int main(int argc, char *argv[])
 	} 
 	switch(option) {
 	  case e_get:
-	  		get_vars(fd);
+			get_vars(fd);
 		   break;
 	  case e_clr:
 		   clr_vars(fd);

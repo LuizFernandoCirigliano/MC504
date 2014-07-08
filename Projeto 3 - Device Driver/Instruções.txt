@@ -1,3 +1,9 @@
+Este driver tem por função contar a frequência de cada letra do alfabeto dentro de um vetor. Qualquer caractere que não seja
+uma letra será ignorado pelo driver e não será levado em conta no momento de contabilizar a frequência de cada letra. O usuário
+pode interagir com esse driver através de comandos ioctl. Segue abaixo as instruções para rodar o driver no ambiente do QEMU,
+no final das instruções estão especificadas as opções de ioctl que estão disponíveis para o usuário.
+
+
 Intruções para rodar e testar o driver no ambiente QEMU:
 
 - Mova o diretório Projeto3 para a pasta linux-3.14.4/drivers e altere o Makefile do diretório drivers acrescentando a linha:
@@ -8,7 +14,8 @@ Intruções para rodar e testar o driver no ambiente QEMU:
 
 	make -j 5 ARCH=i386
 
-- Precisamos incluir os arquivos do driver no ambiente do QEMU. Para isso, criaremos um novo sistema de arquivos ext2 fora do diretório linux-3.14.4 com os seguintes comandos:
+- Precisamos incluir os arquivos do driver no ambiente do QEMU. Para isso, criaremos um novo sistema de arquivos ext2 fora do 
+diretório linux-3.14.4 com os seguintes comandos:
 
 	dd if=/dev/zero of=drivers.img bs=4k count=20
 	mkfs.ext2 drivers.img

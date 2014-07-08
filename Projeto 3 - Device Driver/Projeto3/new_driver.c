@@ -17,7 +17,7 @@
 typedef struct
 {
 	int count[26];
-	char text[500];
+	char c;
 } query_arg_t;
  
 #define QUERY_GET_COUNT _IOR('q', 1, query_arg_t *)
@@ -52,7 +52,7 @@ static int my_ioctl(struct inode *i, struct file *f, unsigned int cmd, unsigned 
 static long my_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 #endif
 {
-	int i, j;
+	int i;
 	query_arg_t q;
 	switch(cmd) {
 		case QUERY_GET_COUNT: {
@@ -60,9 +60,9 @@ static long my_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 					q.count[i] = count[i];
 			}
 			if(copy_to_user((query_arg_t *)arg, &q, sizeof(query_arg_t))) {
-             return -EACCES;
-         }
-         break;
+				return -EACCES;
+			}
+			break;
 		}
 		case QUERY_CLR_TEXT: {
 			memset(count, 0, sizeof(int)*26);
@@ -71,22 +71,18 @@ static long my_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 		case QUERY_SET_TEXT: {
 			if(copy_from_user(&q, (query_arg_t *)arg, sizeof(query_arg_t))) {
     			return -EACCES;
-			}
-			for(i = 0; i < 500; i++) {
-				if(q.text[i] == '\0') {
-					break;
+			}			
+			i = (int)q.c;
+			i -= 65;
+			if(i >= 0) {
+				if(i > 25) {
+					i -= 32;
 				}
-				j = (int)q.text[i];
-				j -= 65;
-				if(j >= 0) {
-					if(j > 25) {
-						j -= 32;
-					}
-					if(j >= 0 && j <= 25) {
-						count[j]++;
-					}
-				}			
-			}
+				if(i >= 0 && i <= 25) {
+					count[i]++;
+				}
+			}			
+			break;					
 		}
 		default: break;
 	}
@@ -95,7 +91,7 @@ static long my_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 
 static struct file_operations memory_fops =
 {
-	.owner 	= THIS_MODULE,
+	.owner	= THIS_MODULE,
    .open 	= memory_open,
    .release = memory_close,
    #if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
