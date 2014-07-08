@@ -1,0 +1,59 @@
+Intruções para rodar e testar o driver no ambiente QEMU:
+
+- Mova o diretório Projeto3 para a pasta linux-3.14.4/drivers e altere o Makefile do diretório drivers acrescentando a linha:
+
+	obj-y += Projeto3/
+
+- A seguir, execute o make no diretório linux-3.14.4 que é a raiz dos fontes do kernel:
+
+	make -j 5 ARCH=i386
+
+- Precisamos incluir os arquivos do driver no ambiente do QEMU. Para isso, criaremos um novo sistema de arquivos ext2 fora do diretório linux-3.14.4 com os seguintes comandos:
+
+	dd if=/dev/zero of=drivers.img bs=4k count=20
+	mkfs.ext2 drivers.img
+
+- Precisamos copiar os arquivos do driver na imagem drivers.img com o debugfs:
+
+	debugfs -w drivers.img
+	debugfs: write linux-3.14.4/drivers/Projeto3/new_driver.ko new_driver.ko
+	debugfs: write linux-3.14.4/drivers/Projeto3/new_driver_ioctl new_driver_ioctl
+	debugfs: quit
+
+- Devemos iniciar o QEMU acrescentando a imagem drivers.img como um novo disco:
+	
+	qemu-system-i386 -hda mc504.img -kernel linux-3.14.4/arch/i386/boot/bzImage -append "ro root=/dev/hda" -hdb drivers.img
+
+- Uma vez executado o QEMU, a imagem drivers.img deverá ser montada com o seguinte comando:
+
+	mkdir drivers
+	mount -t ext2 /dev/hdb drivers/
+
+- Precisamos registrar o novo driver com o seguinte comando:
+
+	insmod drivers/new_driver.ko
+
+- Podemos verificar se o driver foi registrado utilizando o comando lsmod.
+
+- Para testar o driver, entre no diretório drivers:
+
+	cd drivers/
+
+- Mude as permissões do arquivo new_driver_ioctl:
+
+	chmod +xwr new_driver_ioctl
+
+- Execute o arquivo new_driver_ioctl com um dos seguintes comandos:
+	
+	- Para imprimir a frequência registrada de cada caracter:
+	
+		./new_driver_ioctl
+
+	- Para setar o texto de até 500 caracteres do qual se deseja contar a frequência de cada caracter:
+
+		./new_driver_ioctl -s
+
+	- Para zerar a frequência de cada caracter:	
+	
+		./new_driver_ioctl -c
+
