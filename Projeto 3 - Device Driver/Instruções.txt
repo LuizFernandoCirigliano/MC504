@@ -27,6 +27,8 @@ diretório linux-3.14.4 com os seguintes comandos:
 	debugfs: write linux-3.14.4/drivers/Projeto3/new_driver_ioctl new_driver_ioctl
 	debugfs: quit
 
+- Para utilizar os testes fornecidos, devemos escrevê-los na imagem drivers.img de maneira semelhante a descrita acima.
+
 - Devemos iniciar o QEMU acrescentando a imagem drivers.img como um novo disco:
 	
 	qemu-system-i386 -hda mc504.img -kernel linux-3.14.4/arch/i386/boot/bzImage -append "ro root=/dev/hda" -hdb drivers.img

@@ -1,0 +1,2 @@
+As respostas dos testes foram obtidas considerando-se que inicialmente as frequ"encias de cada letra
+estavam zeradas.
