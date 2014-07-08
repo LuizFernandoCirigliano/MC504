@@ -24,13 +24,16 @@ typedef struct
 void get_vars(int fd)
 {
 	int i;
+	char aux[20];
 	query_arg_t q;
 	if(ioctl(fd, QUERY_GET_COUNT, &q) == -1) {
 		perror("Erro ioctl ao contar letras.");
 	}
 	else {
-		for(i = 0; i < 26; i++) {
-			printf("%c: %d\n", (char)i, q.count[i]);		
+		for(i = 0; i < 26; i+=2) {
+			sprintf(aux, "%c: %d  |  %c: %d", (char)(i + 65), q.count[i], (char)(i + 66), q.count[i + 1]);
+			puts(aux);
+			memset(aux, '\0', 20);		
 		}
 	}
 }
@@ -43,7 +46,7 @@ void clr_vars(int fd)
 void set_vars(int fd)
 {
 	query_arg_t q;
-	printf("Digite um texto(ate 500 caracteres): ");
+	printf("Digite um texto (ate 500 caracteres): ");
 	scanf("%s", q.text);
 	if(ioctl(fd, QUERY_SET_TEXT, &q) == -1) {
 	  perror("Erro ioctl ao setar texto.");
@@ -52,7 +55,7 @@ void set_vars(int fd)
  
 int main(int argc, char *argv[])
 {
-	char *file_name = "/dev/query";
+	char *file_name = "/dev/new_driver";
 	int fd;
 	enum {e_get, e_clr, e_set} option; 
 	if(argc == 1) {
